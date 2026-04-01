@@ -1,5 +1,6 @@
 package com.layon.serviceflow.controller;
 
+import com.layon.serviceflow.dto.DadosAtualizacaoTecnico;
 import com.layon.serviceflow.dto.DadosCadastroTecnico;
 import com.layon.serviceflow.dto.DadosListagemTecnico;
 import com.layon.serviceflow.entity.Tecnico;
@@ -14,9 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
-
-
 
 @RestController
 @RequestMapping("/tecnicos")
@@ -43,5 +41,28 @@ public class TecnicoController {
     public ResponseEntity<Page<DadosListagemTecnico>> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
         var page = repository.findAllByAtivoTrue(paginacao).map(DadosListagemTecnico::new);
         return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity detalhar(@PathVariable Long id) {
+        var tecnico = repository.getReferenceById(id);
+        return ResponseEntity.ok(new DadosListagemTecnico(tecnico));
+    }
+    @PutMapping
+    @Transactional
+    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoTecnico dados) {
+        var tecnico = repository.getReferenceById(dados.id());
+        tecnico.atualizarInformacoes(dados); // Delegando a lógica para a Entity
+
+        return ResponseEntity.ok(new DadosListagemTecnico(tecnico));
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity excluir(@PathVariable Long id) {
+        var tecnico = repository.getReferenceById(id);
+        tecnico.excluir();
+
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,13 +1,20 @@
 package com.layon.serviceflow.controller;
 
+import com.layon.serviceflow.dto.DadosCadastroTecnico;
+import com.layon.serviceflow.dto.DadosListagemTecnico;
 import com.layon.serviceflow.entity.Tecnico;
 import com.layon.serviceflow.repository.TecnicoRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
 
 
 
@@ -18,14 +25,23 @@ public class TecnicoController {
     @Autowired
     private TecnicoRepository repository;
     @PostMapping
-    @Transactional
-    public ResponseEntity<Tecnico> cadastrar(@RequestBody @Valid Tecnico tecnico, UriComponentsBuilder uriBuilder) {
-        // O repository.save já retorna a entidade persistida com o ID gerado pelo banco
-        var tecnicoSalvo = repository.save(tecnico);
+    @Transactional // Importante para garantir a persistência correta
+    public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroTecnico dados, UriComponentsBuilder uriBuilder) {
+        // Convertendo o DTO para a Entity
+        var tecnico = new Tecnico();
+        tecnico.setNome(dados.nome());
+        tecnico.setMatricula(dados.matricula());
+        tecnico.setEspecialidade(dados.especialidade());
+        tecnico.setAtivo(true);
 
-        // Constrói a URL para o cabeçalho 'Location'
-        var uri = uriBuilder.path("/tecnicos/{id}").buildAndExpand(tecnicoSalvo.getId()).toUri();
+        repository.save(tecnico);
 
-        return ResponseEntity.created(uri).body(tecnicoSalvo);
+        var uri = uriBuilder.path("/tecnicos/{id}").buildAndExpand(tecnico.getId()).toUri();
+        return ResponseEntity.created(uri).body(tecnico);
+    }
+    @GetMapping
+    public ResponseEntity<Page<DadosListagemTecnico>> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
+        var page = repository.findAllByAtivoTrue(paginacao).map(DadosListagemTecnico::new);
+        return ResponseEntity.ok(page);
     }
 }

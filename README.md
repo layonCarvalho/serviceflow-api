@@ -1,47 +1,87 @@
 # ServiceFlow API 🛠️
 
-O **ServiceFlow** é uma API REST robusta desenvolvida para o gerenciamento de técnicos e fluxos de serviços. Este projeto demonstra a implementação de um ecossistema backend moderno, focado em alta disponibilidade e persistência de dados real.
+**ServiceFlow** é uma API REST desenvolvida para o gerenciamento de fluxos de serviços técnicos. O projeto demonstra o domínio de tecnologias modernas do ecossistema Java, focando em código limpo, segurança de dados e persistência profissional.
 
-## 🏗️ Estrutura do Projeto
-
-A aplicação segue o padrão de arquitetura em camadas para garantir a separação de responsabilidades:
-
-* **Camada de Entidade (`entity`)**: Mapeamento Objeto-Relacional (ORM) utilizando JPA/Hibernate para traduzir as classes Java em tabelas no PostgreSQL.
-* **Camada de Repositório (`repository`)**: Interface que estende o `JpaRepository`, permitindo operações de CRUD no banco de dados sem a necessidade de escrever SQL manualmente.
-* **Camada de Controle (`controller`)**: Endpoints REST que gerenciam as requisições HTTP, utilizando anotações como `@RestController` e `@RequestMapping`.
-* **Banco de Dados**: Persistência real em ambiente **PostgreSQL**, garantindo que os dados não sejam perdidos ao reiniciar a aplicação.
+## 🚀 Status do Projeto
+Atualmente, a API conta com um **CRUD completo de Técnicos**, incluindo validações de negócio, paginação e exclusão lógica.
 
 ## 🛠️ Tecnologias e Ferramentas
-
-* **Java 17+** & **Spring Boot 3**
-* **Spring Data JPA** & **Hibernate**
-* **PostgreSQL** (Driver `org.postgresql`)
-* **Lombok**: Utilizado para produtividade (embora os métodos acessores tenham sido explicitados para garantir compatibilidade com o ambiente).
-* **SpringDoc OpenAPI**: Documentação interativa com **Swagger**.
-* **Maven**: Automação de build e gerenciamento de dependências.
+* **Java 18**: Linguagem utilizada no desenvolvimento.
+* **Spring Boot 4.0.3**: Framework base da aplicação.
+* **Spring Data JPA & Hibernate**: Para persistência e comunicação com o banco.
+* **PostgreSQL**: Banco de dados relacional (versão 14.5).
+* **Lombok**: Redução de código boilerplate.
+* **Bean Validation (Jakarta)**: Integridade e validação de dados.
+* **SpringDoc OpenAPI (Swagger)**: Documentação e testes interativos.
 
 ## 📋 Funcionalidades Implementadas
 
-- [x] **Cadastro de Técnicos (POST)**: Registro de novos profissionais com validação de dados.
-- [x] **Identidade Automática**: IDs gerados via `GenerationType.IDENTITY` no banco de dados.
-- [x] **Documentação Automática**: Interface Swagger configurada.
+### Gestão de Técnicos
+1.  **Cadastro (`POST /tecnicos`)**: Criação de técnicos com validação de campos.
+2.  **Listagem Paginada (`GET /tecnicos`)**: Retorna técnicos ativos com suporte a paginação e ordenação.
+3.  **Detalhamento (`GET /tecnicos/{id}`)**: Consulta individual por ID.
+4.  **Atualização (`PUT /tecnicos`)**: Alteração dinâmica de dados via DTO.
+5.  **Exclusão Lógica (`DELETE /tecnicos/{id}`)**: Inativação do registro no banco (Soft Delete).
 
----
 
-## 🧪 Como Testar a Aplicação
 
-Você pode validar o funcionamento da API de duas formas principais:
+## 🧪 Guia de Testes via Swagger
 
-### 1. Via Swagger (Interface Gráfica)
-1. Com a aplicação rodando, acesse: `http://localhost:8080/swagger-ui/index.html`
-2. Localize o endpoint **POST** `/tecnicos`.
-3. Clique em **Try it out**.
-4. Insira o JSON de teste:
-   ```json
-   {
-     "nome": "Layon Silveira",
-     "matricula": "SFW2026",
-     "especialidade": "Java Backend Developer",
-     "ativo": true
-   }
+Para testar as funcionalidades, inicie a aplicação e acesse: `http://localhost:8080/swagger-ui/index.html`
 
+### 1. Cadastrar Técnico (`POST /tecnicos`)
+Clique em **Try it out** e envie o JSON abaixo:
+````json
+{
+  "nome": "Layon Silveira",
+  "matricula": "SFW2026",
+  "especialidade": "Java Backend Developer"
+}
+````
+Resultado: Status 201 Created. O corpo da resposta incluirá o ID gerado e o campo "ativo": true.
+
+### 2. Listar Técnicos (`GET /tecnicos`)
+   Clique em Execute para visualizar os técnicos ativos.
+
+Paginação: A API utiliza Pageable, permitindo filtrar por page (página) e size (quantidade por página).
+
+Ordenação: Por padrão, a lista é ordenada por nome.
+
+### 3. Detalhar Técnico (`GET /tecnicos/{id}`)
+   Informe o ID de um técnico existente (ex: 3) no campo id.
+ 
+Resultado: Status 200 OK com os dados detalhados do profissional.
+
+### 4. Atualizar Dados (`PUT /tecnicos`)
+   Este endpoint permite a atualização dinâmica de informações. O campo id é obrigatório.
+
+Request Body:
+````json
+{
+"id": 3,
+"nome": "Layon Carvalho Silveira",
+"especialidade": "Senior Java Developer"
+}
+````
+Resultado: Status 200 OK. Somente os campos enviados serão alterados.
+
+### 5. Exclusão Lógica (`DELETE /tecnicos/{id}`)
+   Informe o ID do técnico que deseja desativar.
+
+Resultado: Status 204 No Content.
+
+Regra de Negócio: O técnico não é removido do PostgreSQL; seu status é alterado para ativo: false. Ele deixará de aparecer nas listagens automáticas do GET, mas permanecerá no banco para histórico.
+
+## ⚠️ Testes de Validação e Erros
+A API está protegida com Bean Validation para garantir a qualidade dos dados.
+
+Simular Erro 400 (Bad Request): Tente enviar o campo nome ou matricula vazio no cadastro.
+
+Resposta Esperada:
+````json
+{
+"timestamp": "2026-04-01T...",
+"status": 400,
+"error": "Bad Request",
+"path": "/tecnicos"
+}

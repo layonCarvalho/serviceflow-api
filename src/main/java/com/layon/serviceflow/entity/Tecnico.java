@@ -1,5 +1,7 @@
 package com.layon.serviceflow.entity;
 
+import com.layon.serviceflow.dto.DadosAtualizacaoTecnico;
+import com.layon.serviceflow.dto.DadosCadastroTecnico;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -64,4 +66,24 @@ public class Tecnico {
     }
 
     private boolean ativo = true;
+    public Tecnico() {
+    }
+    public Tecnico(DadosCadastroTecnico dados) {
+        this.nome = dados.nome();
+        this.matricula = dados.matricula();
+        this.especialidade = dados.especialidade();
+        this.ativo = true;
+    }
+
+    public void atualizarInformacoes(DadosAtualizacaoTecnico dados) {
+        if (dados.nome() != null) {
+            this.nome = dados.nome();
+        }
+        if (dados.especialidade() != null) {
+            this.especialidade = dados.especialidade();
+        }
+    }
+    public void excluir() {
+        this.ativo = false;
+    }
 }
